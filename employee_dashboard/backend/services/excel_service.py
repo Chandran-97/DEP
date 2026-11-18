@@ -231,31 +231,22 @@ def load_employees(force: bool = False) -> pd.DataFrame:
             normalized["billable_status"].map(_normalize_billable_value)
         )
 
-    # Derive certification status from completion and expected dates.
-    if source_by_target["certification_status"] is None:
-        if source_by_target["certification_completion_date"] is not None:
+    # Derive certification status from the Certification Name column.
+    # Any non-empty certification text is completed, except N or NN.
+    def cert_status(value):
+        raw = str(value or "").strip()
 
-            def cert_status(row):
-                if _parse_date(row.get("certification_completion_date")):
-                    return "Completed"
+        if not raw or raw.casefold() in {"nan", "none", "nat"}:
+            return "Not provided"
 
-                if _parse_date(row.get("certification_expected_date")):
-                    return "Not completed"
+        if raw.casefold() in {"n", "nn"}:
+            return "Not completed"
 
-                return "Not provided"
+        return "Completed"
 
-            normalized["certification_status"] = normalized.apply(
-                cert_status,
-                axis=1,
-            )
-        else:
-            normalized["certification_status"] = "Not provided"
-
-    else:
-        normalized["certification_status"] = (
-            normalized["certification_status"]
-            .replace("", "Not provided")
-        )
+    normalized["certification_status"] = (
+        normalized["certification"].map(cert_status)
+    )
 
     # Normalize optional fields.
     for col in [
