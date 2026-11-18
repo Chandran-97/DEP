@@ -10,3 +10,13 @@
 .employee-table thead th{position:sticky;top:0;z-index:2;background:#f7f8fc;white-space:nowrap}
 .employee-table td{min-width:120px;max-width:280px;vertical-align:top;overflow-wrap:anywhere}
 .employee-table td:nth-child(3){min-width:170px;font-weight:600}
+
+/* Clickable KPI cards and export controls */
+.kpi-click{font:inherit;text-align:left;cursor:pointer;width:100%;color:inherit;transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease}
+.kpi-click:hover{transform:translateY(-2px);box-shadow:0 8px 22px #26334d12;border-color:#c9c2ff}
+.kpi-click:focus-visible{outline:3px solid #9b91f2;outline-offset:2px}
+.kpi-click.selected{border:2px solid var(--purple);box-shadow:0 0 0 3px #7162d91a}
+.directory-actions{display:flex;align-items:center;gap:10px}
+.kpi-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+@media(max-width:1250px){.kpi-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:800px){.directory-actions{align-items:flex-end;flex-direction:column}}

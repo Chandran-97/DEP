@@ -28,6 +28,7 @@ ALIASES = {
     "billable_from": ["Billable from", "Billable From", "Billable Start Date"],
     "certification_status": ["Certification Status", "Cert Status", "Certification Completed", "Certification Completion Status"],
     "billable_status": ["Billable Status", "Billability", "Billable", "Billing Status"],
+    "bgv_status": ["BGV Status", "Background Verification Status", "Background Check Status", "BGV"],
     "work_status": ["Work Status", "Employment Status", "Employee Status", "Status"],
     "allocation_status": ["Allocation Status", "Project Allocation Status", "Resource Status"],
     "idle_since": ["Idle Since", "Bench Start Date", "Unallocated Since", "Last Project End Date"],
@@ -134,6 +135,8 @@ def load_employees(force: bool = False) -> pd.DataFrame:
         normalized["billable_status"] = normalized["billable_from"].map(billable_from_status)
     else:
         normalized["billable_status"] = normalized["billable_status"].replace("", "Not provided")
+
+    normalized["bgv_status"] = normalized["bgv_status"].replace("", "Not provided")
 
     # A populated completion date is evidence of completion. Expected date alone means pending.
     if source_by_target["certification_status"] is None and source_by_target["certification_completion_date"] is not None:
