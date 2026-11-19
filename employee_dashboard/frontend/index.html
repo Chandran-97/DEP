@@ -5,178 +5,610 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>DEP Dashboard | Employee Analytics</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
+
     <link
         href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap"
         rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+
     <link rel="stylesheet" href="/css/style.css">
 </head>
 
 <body>
+
     <aside class="sidebar">
-        <div class="brand"><span class="brand-mark">D</span><span>DEP Dashboard<small>EMPLOYEE ANALYTICS</small></span>
+
+        <div class="brand">
+            <span class="brand-mark">D</span>
+            <span>
+                DEP Dashboard
+                <small>EMPLOYEE ANALYTICS</small>
+            </span>
         </div>
-        <div class="side-label">WORKSPACE</div><a class="side-link active" href="/dep/dashboard"><span>▦</span>
-            Overview</a><a class="side-link" href="#people"><span>♙</span> Employee directory</a>
+
+        <div class="side-label">WORKSPACE</div>
+
+        <a class="side-link active" href="/dep/dashboard">
+            <span>▦</span> Overview
+        </a>
+
+        <a class="side-link" href="#people">
+            <span>♙</span> Employee directory
+        </a>
+
         <div class="sidebar-bottom">
-            <div class="secure-pill"><i></i> Local secure session</div><button id="logout" class="logout-btn">↪ Sign
-                out</button>
+
+            <div class="secure-pill">
+                <i></i> Local secure session
+            </div>
+
+            <button id="logout" class="logout-btn">
+                ↪ Sign out
+            </button>
+
         </div>
+
     </aside>
+
+
     <main class="main">
+
+        <!-- HEADER -->
+
         <header class="topbar">
+
             <div>
-                <div class="eyebrow">FULCRUM DIGITAL · DEP ANALYTICS</div>
+
+                <div class="eyebrow">
+                    FULCRUM DIGITAL · DEP ANALYTICS
+                </div>
+
                 <h1>Workforce overview</h1>
-                <p class="subhead">A clear view of your people, skills and allocation.</p>
+
+                <p class="subhead">
+                    A clear view of your people, skills and allocation.
+                </p>
+
             </div>
+
             <div class="top-actions">
-                <div class="live-chip"><i></i> LIVE MONITORING</div><button id="refresh-dashboard" class="btn-refresh">↻
-                    <span>Refresh data</span></button>
+
+                <div class="live-chip">
+                    <i></i> LIVE MONITORING
+                </div>
+
+                <button id="refresh-dashboard" class="btn-refresh">
+                    ↻ <span>Refresh data</span>
+                </button>
+
                 <div class="avatar">FD</div>
+
             </div>
+
         </header>
+
+
+        <!-- ERROR MESSAGE -->
+
         <div id="error" class="alert alert-danger d-none"></div>
-        <div class="source-note" id="source-note"><span>●</span> Workbook connected <b id="last-updated">Checking
-                source…</b><span class="demo-tag">LOCAL WORKBOOK</span></div>
-        <section class="kpi-grid kpi-grid-four">
-            <article class="kpi kpi-click" role="button" tabindex="0" data-kpi="certified">
-                <div class="kpi-top"><span>Certified</span><span class="kpi-icon green">✧</span></div>
-                <div class="kpi-number" id="certified">—</div>
-                <div class="kpi-foot" id="certified-foot">Certification completed</div>
+
+
+        <!-- SOURCE STATUS -->
+
+        <div class="source-note" id="source-note">
+
+            <span>●</span>
+
+            Workbook connected
+
+            <b id="last-updated">
+                Checking source…
+            </b>
+
+            <span class="demo-tag">
+                LOCAL WORKBOOK
+            </span>
+
+        </div>
+
+
+        <!-- KPI CARDS -->
+
+        <section class="kpi-grid kpi-grid-five">
+
+
+            <!-- TOTAL EMPLOYEES -->
+
+            <article class="kpi kpi-click"
+                role="button"
+                tabindex="0"
+                data-kpi="total">
+
+                <div class="kpi-top">
+
+                    <span>Total Employees</span>
+
+                    <span class="kpi-icon purple">👥</span>
+
+                </div>
+
+                <div class="kpi-number" id="total-employees">
+                    —
+                </div>
+
+                <div class="kpi-foot">
+                    All employee records
+                </div>
+
             </article>
-            <article class="kpi kpi-click" role="button" tabindex="0" data-kpi="billable">
-                <div class="kpi-top"><span>Billable</span><span class="kpi-icon orange">▤</span></div>
-                <div class="kpi-number" id="billable">—</div>
-                <div class="kpi-foot" id="billable-foot">Billable employees</div>
+
+
+            <!-- CERTIFIED -->
+
+            <article class="kpi kpi-click"
+                role="button"
+                tabindex="0"
+                data-kpi="certified">
+
+                <div class="kpi-top">
+
+                    <span>Certified</span>
+
+                    <span class="kpi-icon green">✧</span>
+
+                </div>
+
+                <div class="kpi-number" id="certified">
+                    —
+                </div>
+
+                <div class="kpi-foot" id="certified-foot">
+                    Certification completed
+                </div>
+
             </article>
-            <article class="kpi kpi-click" role="button" tabindex="0" data-kpi="non_billable">
-                <div class="kpi-top"><span>Non-Billable</span><span class="kpi-icon blue">◷</span></div>
-                <div class="kpi-number" id="non-billable">—</div>
-                <div class="kpi-foot" id="non-billable-foot">Non-billable employees</div>
+
+
+            <!-- BILLABLE -->
+
+            <article class="kpi kpi-click"
+                role="button"
+                tabindex="0"
+                data-kpi="billable">
+
+                <div class="kpi-top">
+
+                    <span>Billable</span>
+
+                    <span class="kpi-icon orange">▤</span>
+
+                </div>
+
+                <div class="kpi-number" id="billable">
+                    —
+                </div>
+
+                <div class="kpi-foot" id="billable-foot">
+                    Billable employees
+                </div>
+
             </article>
-            <article class="kpi kpi-click" role="button" tabindex="0" data-kpi="bgv_pending">
-                <div class="kpi-top"><span>BGV Pending</span><span class="kpi-icon red">⌛</span></div>
-                <div class="kpi-number" id="bgv-pending">—</div>
-                <div class="kpi-foot" id="bgv-pending-foot">Background verification pending</div>
+
+
+            <!-- NON-BILLABLE -->
+
+            <article class="kpi kpi-click"
+                role="button"
+                tabindex="0"
+                data-kpi="non_billable">
+
+                <div class="kpi-top">
+
+                    <span>Non-Billable</span>
+
+                    <span class="kpi-icon blue">◷</span>
+
+                </div>
+
+                <div class="kpi-number" id="non-billable">
+                    —
+                </div>
+
+                <div class="kpi-foot" id="non-billable-foot">
+                    Non-billable employees
+                </div>
+
             </article>
+
+
+            <!-- BGV PENDING -->
+
+            <article class="kpi kpi-click"
+                role="button"
+                tabindex="0"
+                data-kpi="bgv_pending">
+
+                <div class="kpi-top">
+
+                    <span>BGV Pending</span>
+
+                    <span class="kpi-icon red">⌛</span>
+
+                </div>
+
+                <div class="kpi-number" id="bgv-pending">
+                    —
+                </div>
+
+                <div class="kpi-foot" id="bgv-pending-foot">
+                    Background verification pending
+                </div>
+
+            </article>
+
+
         </section>
+
+
+        <!-- INSIGHT CHARTS -->
+
         <section class="insight-grid">
+
+
+            <!-- EMPLOYEES BY LOCATION -->
+
             <article class="panel">
+
                 <div class="panel-head">
+
                     <div>
+
                         <h2>Employees by location</h2>
-                        <p>Where your workforce is based</p>
-                    </div><span class="panel-badge">GEOGRAPHY</span>
-                </div>
-                <div class="chart-wrap"><canvas id="locationChart"></canvas></div>
-            </article>
-            <article class="panel">
-                <div class="panel-head">
-                    <div>
-                        <h2>Certification status</h2>
-                        <p>Completion visibility from source data</p>
-                    </div><span class="panel-badge">SKILLS</span>
-                </div>
-                <div class="chart-wrap doughnut-wrap"><canvas id="certChart"></canvas></div>
-                <div id="cert-legend" class="legend-row"></div>
-            </article>
-            <article class="panel">
-                <div class="panel-head">
-                    <div>
-                        <h2>Billability mix</h2>
-                        <p>Billable and non-billable resources</p>
-                    </div><span class="panel-badge">UTILIZATION</span>
-                </div>
-                <div class="chart-wrap doughnut-wrap"><canvas id="billChart"></canvas></div>
-                <div id="bill-legend" class="legend-row"></div>
-            </article>
-        </section>
-        <section class="lower-grid">
-            <article class="panel client-panel">
-                <div class="panel-head">
-                    <div>
-                        <h2>Client Distribution</h2>
-                        <p>Employee allocation by client</p>
-                    </div><span class="panel-badge">CLIENTS</span>
-                </div>
-                <div class="client-summary">
-                    <div><span class="client-total-label">TOTAL CLIENTS</span><strong id="total-clients">—</strong>
-                    </div><span class="client-summary-note">Click a client to filter the directory</span>
-                </div>
-                <div id="client-distribution" class="client-list"></div>
-            </article>
-            <article class="panel">
-                <div class="panel-head">
-                    <div>
-                        <h2>Project allocation</h2>
-                        <p>Allocation indicators from workbook</p>
+
+                        <p>
+                            Where your workforce is based
+                        </p>
+
                     </div>
+
+                    <span class="panel-badge">
+                        GEOGRAPHY
+                    </span>
+
                 </div>
-                <div id="allocation-status" class="status-list"></div>
+
+                <div class="chart-wrap">
+
+                    <canvas id="locationChart"></canvas>
+
+                </div>
+
             </article>
+
+
+            <!-- CERTIFICATION STATUS -->
+
             <article class="panel">
+
                 <div class="panel-head">
+
                     <div>
-                        <h2>Data quality</h2>
-                        <p>Fields available in the source workbook</p>
-                    </div><span class="panel-badge">SOURCE CHECK</span>
+
+                        <h2>Certification status</h2>
+
+                        <p>
+                            Completion visibility from source data
+                        </p>
+
+                    </div>
+
+                    <span class="panel-badge">
+                        SKILLS
+                    </span>
+
                 </div>
-                <div id="data-quality" class="quality-list"></div>
+
+                <div class="chart-wrap doughnut-wrap">
+
+                    <canvas id="certChart"></canvas>
+
+                </div>
+
+                <div id="cert-legend" class="legend-row"></div>
+
             </article>
-        </section>
-        <section class="panel directory" id="people">
-            <div class="directory-head">
-                <div>
-                    <h2>Employee directory</h2>
-                    <p>Search and combine filters to explore your workforce.</p>
+
+
+            <!-- BILLABILITY MIX -->
+
+            <article class="panel">
+
+                <div class="panel-head">
+
+                    <div>
+
+                        <h2>Billability mix</h2>
+
+                        <p>
+                            Billable and non-billable resources
+                        </p>
+
+                    </div>
+
+                    <span class="panel-badge">
+                        UTILIZATION
+                    </span>
+
                 </div>
-                <div class="result-count" id="result-count">0 employees</div>
-            </div>
-            <div class="filters employee-filters"><input id="search" class="filter-control search-control"
-                    placeholder="⌕  Search across all employee fields…">
-                <div id="column-filters" class="column-filters"></div><button id="clear-filters" class="clear-btn">Clear
-                    all filters</button>
-            </div>
-            <div class="table-responsive employee-table-wrap">
-                <table class="table employee-table">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>EMPLOYEE ID</th>
-                            <th>EMPLOYEE NAME</th>
-                            <th>TECHNICAL SKILLS</th>
-                            <th>YOE</th>
-                            <th>EMAIL</th>
-                            <th>DOJ DEP</th>
-                            <th>INTERNAL / EXTERNAL</th>
-                            <th>MAPPED TO PROJECT</th>
-                            <th>BILLABLE FROM</th>
-                            <th>CLIENT NAME</th>
-                            <th>CERTIFICATION NAME</th>
-                            <th>DATE OF COMPLETION</th>
-                            <th>EXPECTED DATE OF COMPLETION</th>
-                            <th>PROFILES UPLOADED</th>
-                            <th>BGV STATUS</th>
-                            <th>CONTACT NUMBER</th>
-                        </tr>
-                    </thead>
-                    <tbody id="employee-rows">
-                        <tr>
-                            <td colspan="17" class="empty-state">Loading employee data…</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="table-foot" id="table-foot"></div>
+
+                <div class="chart-wrap doughnut-wrap">
+
+                    <canvas id="billChart"></canvas>
+
+                </div>
+
+                <div id="bill-legend" class="legend-row"></div>
+
+            </article>
+
+
         </section>
-        <footer>DEP Dashboard · Employee analytics <span>Refresh check every 10 seconds · Source data remains
-                authoritative</span></footer>
+
+
+        <!-- LOWER PANELS -->
+
+        <section class="lower-grid">
+
+
+            <!-- CLIENT DISTRIBUTION -->
+
+            <article class="panel client-panel">
+
+                <div class="panel-head">
+
+                    <div>
+
+                        <h2>Client Distribution</h2>
+
+                        <p>
+                            Employee allocation by client
+                        </p>
+
+                    </div>
+
+                    <span class="panel-badge">
+                        CLIENTS
+                    </span>
+
+                </div>
+
+
+                <div class="client-summary">
+
+                    <div>
+
+                        <span class="client-total-label">
+                            TOTAL CLIENTS
+                        </span>
+
+                        <strong id="total-clients">
+                            —
+                        </strong>
+
+                    </div>
+
+                    <span class="client-summary-note">
+                        Click a client to filter the directory
+                    </span>
+
+                </div>
+
+
+                <div id="client-distribution" class="client-list"></div>
+
+            </article>
+
+
+            <!-- PROJECT ALLOCATION -->
+
+            <article class="panel">
+
+                <div class="panel-head">
+
+                    <div>
+
+                        <h2>Project allocation</h2>
+
+                        <p>
+                            Allocation indicators from workbook
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <div id="allocation-status" class="status-list"></div>
+
+            </article>
+
+
+            <!-- DATA QUALITY -->
+
+            <article class="panel">
+
+                <div class="panel-head">
+
+                    <div>
+
+                        <h2>Data quality</h2>
+
+                        <p>
+                            Fields available in the source workbook
+                        </p>
+
+                    </div>
+
+                    <span class="panel-badge">
+                        SOURCE CHECK
+                    </span>
+
+                </div>
+
+                <div id="data-quality" class="quality-list"></div>
+
+            </article>
+
+
+        </section>
+
+
+        <!-- EMPLOYEE DIRECTORY -->
+
+        <section class="panel directory" id="people">
+
+
+            <!-- DIRECTORY HEADER -->
+
+            <div class="directory-head">
+
+                <div>
+
+                    <h2>Employee directory</h2>
+
+                    <p>
+                        Search and combine filters to explore your workforce.
+                    </p>
+
+                </div>
+
+                <div class="result-count" id="result-count">
+                    0 employees
+                </div>
+
+            </div>
+
+
+            <!-- FILTERS -->
+
+            <div class="filters employee-filters">
+
+                <input
+                    id="search"
+                    class="filter-control search-control"
+                    placeholder="⌕  Search across all employee fields…">
+
+                <div id="column-filters" class="column-filters"></div>
+
+                <button id="clear-filters" class="clear-btn">
+                    Clear all filters
+                </button>
+
+            </div>
+
+
+            <!-- EMPLOYEE TABLE -->
+
+            <div class="table-responsive employee-table-wrap">
+
+                <table class="table employee-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>#</th>
+
+                            <th>EMPLOYEE ID</th>
+
+                            <th>EMPLOYEE NAME</th>
+
+                            <th>TECHNICAL SKILLS</th>
+
+                            <th>YOE</th>
+
+                            <th>EMAIL</th>
+
+                            <th>DOJ DEP</th>
+
+                            <th>INTERNAL / EXTERNAL</th>
+
+                            <th>MAPPED TO PROJECT</th>
+
+                            <th>BILLABLE FROM</th>
+
+                            <th>CLIENT NAME</th>
+
+                            <th>CERTIFICATION NAME</th>
+
+                            <th>DATE OF COMPLETION</th>
+
+                            <th>EXPECTED DATE OF COMPLETION</th>
+
+                            <th>PROFILES UPLOADED</th>
+
+                            <th>BGV STATUS</th>
+
+                            <th>CONTACT NUMBER</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="employee-rows">
+
+                        <tr>
+
+                            <td colspan="17" class="empty-state">
+                                Loading employee data…
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <!-- TABLE FOOTER -->
+
+            <div class="table-foot" id="table-foot"></div>
+
+
+        </section>
+
+
+        <!-- FOOTER -->
+
+        <footer>
+
+            DEP Dashboard · Employee analytics
+
+            <span>
+                Refresh check every 10 seconds · Source data remains authoritative
+            </span>
+
+        </footer>
+
+
     </main>
+
+
+    <!-- SCRIPTS -->
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
     <script src="/js/common.js"></script>
+
     <script src="/js/dashboard.js"></script>
+
+
 </body>
 
 </html>
