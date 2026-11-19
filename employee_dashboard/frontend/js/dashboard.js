@@ -1,5 +1,6 @@
 let charts = {};
 let allEmployees = [];
+let displayedEmployees = [];
 let version = null;
 let busy = false;
 let selectedClient = "";
@@ -45,26 +46,38 @@ async function api(url) {
 }
 
 function showError(msg) {
-    $('error').textContent = msg;
-    $('error').classList.remove('d-none');
+    const errorElement = $('error');
+    if (!errorElement) return;
+
+    errorElement.textContent = msg;
+    errorElement.classList.remove('d-none');
 }
 
 function hideError() {
-    $('error').classList.add('d-none');
+    const errorElement = $('error');
+    if (errorElement) {
+        errorElement.classList.add('d-none');
+    }
 }
 
 function metric(id, value, available = true) {
-    $(id).textContent = available
+    const el = $(id);
+    if (!el) return;
+
+    el.textContent = available
         ? Number(value || 0).toLocaleString()
         : 'N/A';
 }
 
 function drawChart(id, type, labels, data, colors = palette) {
+    const canvas = $(id);
+    if (!canvas) return;
+
     if (charts[id]) {
         charts[id].destroy();
     }
 
-    charts[id] = new Chart($(id), {
+    charts[id] = new Chart(canvas, {
         type,
         data: {
             labels,
@@ -124,33 +137,17 @@ function drawChart(id, type, labels, data, colors = palette) {
     });
 }
 
-function renderDist(id, items) {
-    const el = $(id);
-
-    if (!items?.length) {
-        el.innerHTML = '<div class="empty-state">No source data available</div>';
-        return;
-    }
-
-    el.innerHTML = items.slice(0, 6).map((x, i) => `
-        <div class="status-row">
-            <span class="status-label">
-                <i class="status-dot" style="background:${palette[i % palette.length]}"></i>
-                ${esc(x.label)}
-            </span>
-            <b class="status-count">${x.count}</b>
-        </div>
-    `).join('');
-}
-
 function renderClientDistribution(items) {
     const host = $('client-distribution');
+    const totalClients = $('total-clients');
+
+    if (!host || !totalClients) return;
 
     const clients = (items || [])
         .filter(x => x.label && x.label !== 'Not provided')
         .sort((a, b) => b.count - a.count);
 
-    $('total-clients').textContent = clients.length.toLocaleString();
+    totalClients.textContent = clients.length.toLocaleString();
 
     if (!clients.length) {
         host.innerHTML = '<div class="empty-state">No client names found in the workbook.</div>';
@@ -191,32 +188,13 @@ function renderClientDistribution(items) {
             renderEmployees();
 
             if (selectedClient) {
-                document.querySelector('#people').scrollIntoView({
+                document.querySelector('#people')?.scrollIntoView({
                     behavior: 'smooth',
                     block: 'start'
                 });
             }
         });
     });
-}
-
-function renderQuality(summary) {
-    const rows = [
-        ['Certification status', summary.certification_available],
-        ['Billability status', summary.billability_available],
-        ['Work status', summary.work_status_available],
-        ['Allocation status', summary.allocation_available],
-        ['Idle start date', summary.idle_date_available]
-    ];
-
-    $('data-quality').innerHTML = rows.map(([n, ok]) => `
-        <div class="quality-row">
-            <span>${n}</span>
-            <span class="quality-state ${ok ? 'available' : 'missing'}">
-                ${ok ? '● Available' : '● Not in workbook'}
-            </span>
-        </div>
-    `).join('');
 }
 
 const tableColumns = [
@@ -241,6 +219,7 @@ const tableColumns = [
 
 function buildColumnFilters() {
     const host = $('column-filters');
+    if (!host) return;
 
     host.innerHTML = tableColumns.map(([key, label]) => `
         <select class="filter-control column-filter"
@@ -337,8 +316,125 @@ function matchesKpi(e) {
     return true;
 }
 
+
+// MISSING EMPLOYEE DETAILS
+
+const missingDetailFields = [
+    { label: 'Manager', keys: ['manager', 'manager_name'] },
+    { label: 'Email', keys: ['email'] },
+    { label: 'Department', keys: ['department'] },
+    { label: 'Project', keys: ['project', 'mapped_to_project'] },
+    { label: 'Location', keys: ['location'] },
+    { label: 'Contact Number', keys: ['contact_number', 'phone', 'mobile'] },
+    { label: 'Technical Skills', keys: ['technical_skills', 'skills'] },
+    { label: 'YOE', keys: ['yoe', 'years_of_experience'] },
+    { label: 'DOJ DEP', keys: ['doj_dep', 'date_of_joining_dep'] },
+    { label: 'Internal/External', keys: ['internal_external', 'employee_type'] },
+    { label: 'Client Name', keys: ['client_name', 'client'] },
+    { label: 'Certification', keys: ['certification', 'certification_name'] },
+    { label: 'Profiles Uploaded', keys: ['profiles_uploaded'] },
+    { label: 'Billable Status', keys: ['billable_status'] },
+    { label: 'BGV Status', keys: ['bgv_status'] }
+];
+
+function isMissingDetailValue(value) {
+    const text = String(value ?? '').trim().toLowerCase();
+
+    return !text || [
+        'not provided',
+        'not available',
+        'n/a',
+        'na',
+        'none',
+        'null',
+        'nan',
+        '-'
+    ].includes(text);
+}
+
+function getMissingFields(employee) {
+    return missingDetailFields
+        .filter(field => {
+            const key = field.keys.find(k =>
+                Object.prototype.hasOwnProperty.call(employee, k)
+            );
+
+            // A field missing from the normalized object is considered missing.
+            return !key || isMissingDetailValue(employee[key]);
+        })
+        .map(field => field.label);
+}
+
+function renderMissingEmployeeDetails() {
+    const list = $('missing-details-list');
+    const affectedCount = $('missing-employee-count');
+    const missingCount = $('missing-field-count');
+    const searchBox = $('missing-details-search');
+
+    // Do nothing if the Missing Employee Details panel is not present.
+    if (!list || !affectedCount || !missingCount) return;
+
+    const affected = allEmployees
+        .map(employee => ({
+            employee,
+            missing: getMissingFields(employee)
+        }))
+        .filter(item => item.missing.length > 0);
+
+    affectedCount.textContent = affected.length.toLocaleString();
+
+    missingCount.textContent = affected
+        .reduce((total, item) => total + item.missing.length, 0)
+        .toLocaleString();
+
+    const query = (searchBox?.value || '').trim().toLowerCase();
+
+    const filtered = affected.filter(({ employee }) => {
+        const name = String(employee.name ?? '').toLowerCase();
+        const id = String(employee.employee_id ?? '').toLowerCase();
+
+        return !query || name.includes(query) || id.includes(query);
+    });
+
+    if (!filtered.length) {
+        list.innerHTML = query
+            ? '<div class="empty-state">No employees match your search.</div>'
+            : '<div class="empty-state">No missing details found.</div>';
+
+        return;
+    }
+
+    list.innerHTML = filtered.map(({ employee, missing }) => `
+        <div class="missing-details-row">
+
+            <div class="missing-details-employee">
+                <strong>${esc(employee.name || 'Name not provided')}</strong>
+                <span>${esc(employee.employee_id || 'Employee ID not provided')}</span>
+            </div>
+
+            <div class="missing-details-fields">
+                ${missing.map(field => `
+                    <span class="missing-field-tag">${esc(field)}</span>
+                `).join('')}
+            </div>
+
+            <div class="missing-details-total">
+                ${missing.length} missing ${missing.length === 1 ? 'field' : 'fields'}
+            </div>
+
+        </div>
+    `).join('');
+}
+
 function renderEmployees() {
-    const q = $('search').value.trim().toLowerCase();
+    const searchElement = $('search');
+    const rowsElement = $('employee-rows');
+    const resultCountElement = $('result-count');
+    const tableFootElement = $('table-foot');
+
+    if (!searchElement || !rowsElement) return;
+
+    const q = searchElement.value.trim().toLowerCase();
 
     const active = [
         ...document.querySelectorAll('.column-filter')
@@ -356,15 +452,22 @@ function renderEmployees() {
         ))
     );
 
-    $('result-count').textContent = `${rows.length} employees`;
+    // Keep the exact rows currently displayed for Excel export.
+    displayedEmployees = rows;
 
-    $('table-foot').textContent =
-        `Showing ${rows.length} of ${allEmployees.length} employee records` +
-        `${activeKpi ? ` · KPI: ${activeKpi.replaceAll('_', ' ')}` : ''}` +
-        `${selectedClient ? ` · Client: ${selectedClient}` : ''}` +
-        ` · Filter source columns · Missing values shown as Not provided`;
+    if (resultCountElement) {
+        resultCountElement.textContent = `${rows.length} employees`;
+    }
 
-    $('employee-rows').innerHTML = rows.length
+    if (tableFootElement) {
+        tableFootElement.textContent =
+            `Showing ${rows.length} of ${allEmployees.length} employee records` +
+            `${activeKpi ? ` · KPI: ${activeKpi.replaceAll('_', ' ')}` : ''}` +
+            `${selectedClient ? ` · Client: ${selectedClient}` : ''}` +
+            ` · Filter source columns · Missing values shown as Not provided`;
+    }
+
+    rowsElement.innerHTML = rows.length
         ? rows.map(e => `
             <tr>
                 ${tableColumns.map(([key]) => `
@@ -398,7 +501,7 @@ function setupKpiCards() {
             renderEmployees();
 
             if (activeKpi) {
-                document.querySelector('#people').scrollIntoView({
+                document.querySelector('#people')?.scrollIntoView({
                     behavior: 'smooth',
                     block: 'start'
                 });
@@ -429,6 +532,8 @@ async function refresh() {
 
         allEmployees = data.employees || [];
 
+        renderMissingEmployeeDetails();
+
         // TOTAL EMPLOYEES KPI
         metric('total-employees', allEmployees.length);
 
@@ -439,21 +544,33 @@ async function refresh() {
         metric('bgv-pending', s.bgv_pending, s.bgv_status_available);
 
         // KPI FOOTERS
-        $('certified-foot').textContent = s.certification_available
-            ? `${s.certification_not_completed || 0} not completed`
-            : 'Certification status not supplied';
+        const certifiedFoot = $('certified-foot');
+        if (certifiedFoot) {
+            certifiedFoot.textContent = s.certification_available
+                ? `${s.certification_not_completed || 0} not completed`
+                : 'Certification status not supplied';
+        }
 
-        $('billable-foot').textContent = s.billability_available
-            ? `${s.non_billable || 0} non-billable`
-            : 'Billability not supplied';
+        const billableFoot = $('billable-foot');
+        if (billableFoot) {
+            billableFoot.textContent = s.billability_available
+                ? `${s.non_billable || 0} non-billable`
+                : 'Billability not supplied';
+        }
 
-        $('non-billable-foot').textContent = s.billability_available
-            ? `${s.billable || 0} billable`
-            : 'Billability not supplied';
+        const nonBillableFoot = $('non-billable-foot');
+        if (nonBillableFoot) {
+            nonBillableFoot.textContent = s.billability_available
+                ? `${s.billable || 0} billable`
+                : 'Billability not supplied';
+        }
 
-        $('bgv-pending-foot').textContent = s.bgv_status_available
-            ? 'BGV marked Pending'
-            : 'BGV Status column not supplied';
+        const bgvPendingFoot = $('bgv-pending-foot');
+        if (bgvPendingFoot) {
+            bgvPendingFoot.textContent = s.bgv_status_available
+                ? 'BGV marked Pending'
+                : 'BGV Status column not supplied';
+        }
 
         // EMPLOYEES BY LOCATION
         drawChart(
@@ -475,14 +592,18 @@ async function refresh() {
             cert.map(x => x.count)
         );
 
-        $('cert-legend').innerHTML = cert.length
-            ? cert.slice(0, 4).map((x, i) => `
-                <span>
-                    <i class="legend-dot" style="background:${palette[i]}"></i>
-                    ${esc(x.label)} (${x.count})
-                </span>
-            `).join('')
-            : '<span>Certification status not provided in source</span>';
+        const certLegend = $('cert-legend');
+
+        if (certLegend) {
+            certLegend.innerHTML = cert.length
+                ? cert.slice(0, 4).map((x, i) => `
+                    <span>
+                        <i class="legend-dot" style="background:${palette[i]}"></i>
+                        ${esc(x.label)} (${x.count})
+                    </span>
+                `).join('')
+                : '<span>Certification status not provided in source</span>';
+        }
 
         // BILLABILITY CHART
         const bill = data.by_billability.filter(
@@ -496,24 +617,30 @@ async function refresh() {
             bill.map(x => x.count)
         );
 
-        $('bill-legend').innerHTML = bill.length
-            ? bill.slice(0, 4).map((x, i) => `
-                <span>
-                    <i class="legend-dot" style="background:${palette[i]}"></i>
-                    ${esc(x.label)} (${x.count})
-                </span>
-            `).join('')
-            : '<span>Billability not provided in source</span>';
+        const billLegend = $('bill-legend');
 
-        // CLIENT DISTRIBUTION AND OTHER PANELS
+        if (billLegend) {
+            billLegend.innerHTML = bill.length
+                ? bill.slice(0, 4).map((x, i) => `
+                    <span>
+                        <i class="legend-dot" style="background:${palette[i]}"></i>
+                        ${esc(x.label)} (${x.count})
+                    </span>
+                `).join('')
+                : '<span>Billability not provided in source</span>';
+        }
+
+        // CLIENT DISTRIBUTION
         window.lastClientDistribution = data.by_client;
-
         renderClientDistribution(data.by_client);
-        renderDist('allocation-status', data.by_allocation);
-        renderQuality(s);
+
+        // Project Allocation and Data Quality panels were removed.
+        // Their rendering functions are no longer called.
 
         // FILTERS AND EMPLOYEE DIRECTORY
-        if (!$('column-filters').children.length) {
+        const columnFilters = $('column-filters');
+
+        if (columnFilters && !columnFilters.children.length) {
             buildColumnFilters();
         }
 
@@ -523,8 +650,12 @@ async function refresh() {
         // DATA VERSION
         version = data.version;
 
-        $('last-updated').textContent =
-            `Last read ${new Date().toLocaleTimeString()}`;
+        const lastUpdated = $('last-updated');
+
+        if (lastUpdated) {
+            lastUpdated.textContent =
+                `Last read ${new Date().toLocaleTimeString()}`;
+        }
 
     } catch (e) {
         showError(e.message);
@@ -540,46 +671,118 @@ buildColumnFilters();
 
 setupKpiCards();
 
-$('search').addEventListener('input', renderEmployees);
+const searchElement = $('search');
+
+if (searchElement) {
+    searchElement.addEventListener('input', renderEmployees);
+}
+
+const missingDetailsSearch = $('missing-details-search');
+
+if (missingDetailsSearch) {
+    missingDetailsSearch.addEventListener(
+        'input',
+        renderMissingEmployeeDetails
+    );
+}
 
 
 // CLEAR FILTERS
 
-$('clear-filters').addEventListener('click', () => {
-    $('search').value = '';
-    selectedClient = '';
-    activeKpi = null;
+const clearFiltersButton = $('clear-filters');
 
-    document.querySelectorAll('.column-filter').forEach(x => {
-        x.value = '';
+if (clearFiltersButton) {
+    clearFiltersButton.addEventListener('click', () => {
+        if (searchElement) {
+            searchElement.value = '';
+        }
+
+        selectedClient = '';
+        activeKpi = null;
+
+        document.querySelectorAll('.column-filter').forEach(x => {
+            x.value = '';
+        });
+
+        document.querySelectorAll('[data-kpi]').forEach(card => {
+            card.classList.remove('selected');
+        });
+
+        renderClientDistribution(
+            window.lastClientDistribution || []
+        );
+
+        renderEmployees();
     });
+}
 
-    document.querySelectorAll('[data-kpi]').forEach(card => {
-        card.classList.remove('selected');
+
+// DOWNLOAD CURRENTLY DISPLAYED EMPLOYEES AS EXCEL
+
+const downloadExcelButton = $('download-excel');
+
+if (downloadExcelButton) {
+    downloadExcelButton.addEventListener('click', () => {
+        if (typeof XLSX === 'undefined') {
+            showError('Excel export library did not load. Please refresh the dashboard and try again.');
+            return;
+        }
+
+        if (!displayedEmployees.length) {
+            showError('There are no employee rows to download.');
+            return;
+        }
+
+        hideError();
+
+        const exportRows = displayedEmployees.map(employee => {
+            const row = {};
+            tableColumns.forEach(([key, label]) => {
+                row[label] = employee[key] ?? 'Not provided';
+            });
+            return row;
+        });
+
+        const worksheet = XLSX.utils.json_to_sheet(exportRows);
+        worksheet['!cols'] = tableColumns.map(([key, label]) => ({
+            wch: Math.max(label.length + 2, 16)
+        }));
+
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Employees');
+
+        const timestamp = new Date().toISOString()
+            .replace(/[:.]/g, '-')
+            .slice(0, 19);
+        const filename = `DEP_Employees_Filtered_${timestamp}.xlsx`;
+
+        XLSX.writeFile(workbook, filename);
     });
-
-    renderClientDistribution(
-        window.lastClientDistribution || []
-    );
-
-    renderEmployees();
-});
+}
 
 
 // REFRESH BUTTON
 
-$('refresh-dashboard').addEventListener('click', refresh);
+const refreshButton = $('refresh-dashboard');
+
+if (refreshButton) {
+    refreshButton.addEventListener('click', refresh);
+}
 
 
 // LOGOUT
 
-$('logout').addEventListener('click', async () => {
-    await fetch('/api/auth/logout', {
-        method: 'POST'
-    });
+const logoutButton = $('logout');
 
-    location.href = '/login';
-});
+if (logoutButton) {
+    logoutButton.addEventListener('click', async () => {
+        await fetch('/api/auth/logout', {
+            method: 'POST'
+        });
+
+        location.href = '/login';
+    });
+}
 
 
 // INITIAL LOAD
