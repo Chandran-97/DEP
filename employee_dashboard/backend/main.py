@@ -8,7 +8,7 @@ from starlette.responses import Response
 from backend.auth_utils import validate_password_hash
 from backend.config import COOKIE_SECURE, FRONTEND_DIR, LOGIN_EMAIL, LOGIN_PASSWORD_HASH, SESSION_SECRET
 from backend.routers import auth, dashboard, employees
-
+ 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     missing = [n for n,v in (("LOGIN_EMAIL",LOGIN_EMAIL),("LOGIN_PASSWORD_HASH",LOGIN_PASSWORD_HASH),("SESSION_SECRET",SESSION_SECRET)) if not v]
@@ -22,7 +22,7 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
         public={"/login","/api/auth/login","/css/style.css","/js/login.js"}
         if path not in public and not request.session.get("authenticated"):
             response=JSONResponse(status_code=401,content={"detail":"Authentication required."}) if path.startswith("/api/") else RedirectResponse("/login",303)
-        elif path=="/login" and request.session.get("authenticated"): response=RedirectResponse("/",303)
+        elif path=="/login" and request.session.get("authenticated"): response=RedirectResponse("/dep/dashboard",303)
         else: response=await call_next(request)
         response.headers.setdefault("Cache-Control","no-store")
         response.headers.setdefault("X-Content-Type-Options","nosniff")

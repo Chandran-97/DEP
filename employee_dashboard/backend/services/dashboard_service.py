@@ -2,7 +2,7 @@ from collections import Counter
 from backend.services.excel_service import get_workbook_version, load_employees, to_records
 
 TRUE = {"yes", "y", "true", "1", "completed", "certified", "billable", "active", "working", "allocated"}
-FALSE = {"no", "n", "false", "0", "not completed", "not certified", "non-billable", "non billable", "inactive", "not working", "bench", "unallocated"}
+FALSE = {"no", "n", "false", "0", "not completed", "not certified", "not yet billable", "not billable", "pending", "future", "non-billable", "non billable", "inactive", "not working", "bench", "unallocated"}
 
 def _key(v): return str(v or "").strip().casefold()
 def _count_status(series, positive=True):
@@ -23,18 +23,21 @@ def get_dashboard():
     bill_col = df["billable_status"]
     work_col = df["work_status"]
     alloc_col = df["allocation_status"]
+    bgv_col = df["bgv_status"]
     idle = df["idle_days"].dropna()
     return {
         "summary": {"total_employees": total, "locations": int(df.loc[df.location != "Not provided", "location"].nunique()),
             "certified": _count_status(cert_col), "certification_not_completed": _count_status(cert_col, False),
             "billable": _count_status(bill_col), "non_billable": _count_status(bill_col, False),
+            "bgv_pending": int(bgv_col.fillna("").astype(str).str.strip().str.casefold().isin({"pending", "bgv pending"}).sum()),
             "working": _count_status(work_col), "not_working": _count_status(work_col, False),
             "bench": _count_status(alloc_col, False), "long_idle": int((idle >= 30).sum()),
             "certification_available": available("certification_status"), "billability_available": available("billable_status"),
+            "bgv_status_available": available("bgv_status"),
             "work_status_available": available("work_status"), "allocation_available": available("allocation_status"),
             "idle_date_available": bool(idle.size)},
         "by_location": distribution("location"), "by_certification": distribution("certification_status"),
-        "by_billability": distribution("billable_status"), "by_work_status": distribution("work_status"),
+        "by_billability": distribution("billable_status"), "by_bgv_status": distribution("bgv_status"), "by_work_status": distribution("work_status"),
         "by_allocation": distribution("allocation_status"), "by_manager": distribution("manager"),
         "employees": to_records(df), "source_columns": list(df.columns), "version": get_workbook_version()
     }

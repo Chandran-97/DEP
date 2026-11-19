@@ -1,0 +1,32 @@
+PEOPLEPULSE - ALL SOURCE COLUMNS UPDATE
+
+This update adds all columns from the Data Practice Resources workbook to the employee directory and adds a dropdown filter for every source column.
+
+INSTALL:
+1. Stop the running dashboard (Ctrl+C in its Command Prompt window).
+2. Extract this ZIP.
+3. Open the extracted employee_dashboard folder.
+4. Copy its backend and frontend folders.
+5. Paste them into your existing project folder:
+   Desktop\New folder (3)\employee_dashboard
+6. Choose Replace files in destination when Windows asks.
+7. DO NOT replace/delete your existing .env file.
+8. DO NOT replace/delete your existing data\employees.xlsx workbook.
+9. Start the dashboard again using start_dashboard.bat.
+10. Refresh the browser with Ctrl+F5.
+
+The dashboard reads these workbook columns:
+#, Employee ID, Employee Name, Technical Skills, YOE, Email, DOJ DEP,
+Internal/External, Mapped to Project, Billable from, Client Name,
+Certification Name, Date of Completion, Expected Date of Completion,
+Profiles Uploaded, Contact Number.
+
+A dropdown filter is provided for every column. Search scans every displayed column.
+Billability is derived from Billable from: a valid date on or before today is Billable;
+a future date is Not yet billable; blank/invalid dates are Not provided.
+Certification completion is derived from Date of Completion when there is no explicit status column.
+
+Fields not present in the source workbook (for example location, work status, idle start date)
+are not fabricated and remain unavailable in KPI cards.
+
+This is still reading the local workbook path. It does not create live SharePoint synchronization.
