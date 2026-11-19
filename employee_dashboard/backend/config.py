@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
-_excel = Path(os.getenv("EXCEL_PATH", "data/employees.xlsx")).expanduser()
+_excel = Path(os.getenv("EXCEL_PATH", "data/DEP_filtered_employees.xlsx")).expanduser()
 EXCEL_PATH = _excel if _excel.is_absolute() else BASE_DIR / _excel
 FRONTEND_DIR = BASE_DIR / "frontend"
 LOGIN_EMAIL = os.getenv("LOGIN_EMAIL", "").strip()
