@@ -8,7 +8,7 @@ from starlette.responses import Response
 from backend.auth_utils import validate_password_hash
 from backend.config import COOKIE_SECURE, FRONTEND_DIR, LOGIN_EMAIL, LOGIN_PASSWORD_HASH, SESSION_SECRET
 from backend.routers import auth, dashboard, employees
- 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     missing = [n for n,v in (("LOGIN_EMAIL",LOGIN_EMAIL),("LOGIN_PASSWORD_HASH",LOGIN_PASSWORD_HASH),("SESSION_SECRET",SESSION_SECRET)) if not v]
@@ -41,4 +41,13 @@ async def bad_excel(request,exc): return JSONResponse(status_code=500,content={"
 @app.exception_handler(RuntimeError)
 async def data_error(request,exc): return JSONResponse(status_code=503,content={"detail":str(exc)})
 app.include_router(auth.router); app.include_router(dashboard.router); app.include_router(employees.router)
+
+@app.get("/", include_in_schema=False)
+def root_redirect():
+    return RedirectResponse("/dep/dashboard", 302)
+
+@app.get("/dep/dashboard", include_in_schema=False)
+def dep_dashboard():
+    return FileResponse(FRONTEND_DIR / "index.html")
+
 app.mount("/",StaticFiles(directory=FRONTEND_DIR,html=True),name="frontend")
