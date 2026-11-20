@@ -858,3 +858,14 @@ footer {
 .employee-table tbody td:nth-child(4) {
     height: auto;
 }
+
+   /* YOE CHART */
+
+
+#yoeChart {
+    width: 100% !important;
+}
+
+#yoeChart {
+    max-width: 100%;
+}
