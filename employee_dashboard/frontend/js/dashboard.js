@@ -5,6 +5,19 @@ let version = null;
 let busy = false;
 let selectedClient = "";
 let activeKpi = null;
+let activeSkill = "";
+
+const technicalSkills = ['Python', 'DATABRICKS', 'SQL', 'PySpark', 'AWS', 'Azure', 'GCP', 'Cloud'];
+const technicalSkillTerms = {
+    Python: ['python'],
+    SQL: ['sql'],
+    DATABRICKS: ['databricks'],
+    PySpark: ['pyspark'],
+    AWS: ['aws'],
+    Azure: ['azure'],
+    GCP: ['gcp'],
+    Cloud: ['cloud', 'aws', 'azure', 'gcp']
+};
 
 const $ = id => document.getElementById(id);
 
@@ -69,7 +82,7 @@ function metric(id, value, available = true) {
         : 'N/A';
 }
 
-function drawChart(id, type, labels, data, colors = palette) {
+function drawChart(id, type, labels, data, colors = palette, onDataClick = null) {
     const canvas = $(id);
     if (!canvas) return;
 
@@ -100,6 +113,17 @@ function drawChart(id, type, labels, data, colors = palette) {
                     backgroundColor: '#202741',
                     padding: 10,
                     cornerRadius: 8
+                }
+            },
+            onClick: (event, elements) => {
+                if (onDataClick && elements.length) {
+                    onDataClick(labels[elements[0].index]);
+                }
+            },
+            onHover: (event, elements) => {
+                if (event.native) {
+                    event.native.target.style.cursor =
+                        onDataClick && elements.length ? 'pointer' : 'default';
                 }
             },
             ...(type === 'bar'
@@ -135,6 +159,70 @@ function drawChart(id, type, labels, data, colors = palette) {
                 })
         }
     });
+}
+
+function employeeHasSkill(employee, skill) {
+    const value = String(employee.technical_skills ?? '');
+
+    return technicalSkillTerms[skill].some(term =>
+        new RegExp(`(^|[^a-z0-9])${term}(?=$|[^a-z0-9])`, 'i').test(value)
+    );
+}
+
+function renderTechnicalSkills() {
+    const counts = technicalSkills.map(skill => ({
+        label: skill,
+        count: allEmployees.filter(employee =>
+            employeeHasSkill(employee, skill)
+        ).length
+    }));
+
+    drawChart(
+        'billChart',
+        'doughnut',
+        counts.map(item => item.label),
+        counts.map(item => item.count),
+        palette,
+        toggleSkillFilter
+    );
+
+    const legend = $('bill-legend');
+    if (!legend) return;
+
+    legend.innerHTML = counts.map((item, index) => `
+        <button type="button"
+            class="skill-legend-button ${activeSkill === item.label ? 'selected' : ''}"
+            data-skill="${item.label}"
+            aria-pressed="${activeSkill === item.label}">
+            <i class="legend-dot" style="background:${palette[index]}"></i>
+            ${item.label} (${item.count.toLocaleString()})
+        </button>
+    `).join('');
+
+    legend.querySelectorAll('.skill-legend-button').forEach(button => {
+        button.addEventListener('click', () =>
+            toggleSkillFilter(button.dataset.skill)
+        );
+    });
+}
+
+function toggleSkillFilter(skill) {
+    activeSkill = activeSkill === skill ? '' : skill;
+
+    document.querySelectorAll('.skill-legend-button').forEach(button => {
+        const selected = button.dataset.skill === activeSkill;
+        button.classList.toggle('selected', selected);
+        button.setAttribute('aria-pressed', String(selected));
+    });
+
+    renderEmployees();
+
+    if (activeSkill) {
+        document.querySelector('#people')?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
 }
 
 function renderClientDistribution(items) {
@@ -445,6 +533,7 @@ function renderEmployees() {
     const rows = allEmployees.filter(e =>
         (!selectedClient ||
             String(e.client_name ?? '').trim() === selectedClient) &&
+        (!activeSkill || employeeHasSkill(e, activeSkill)) &&
         matchesKpi(e) &&
         active.every(([k, v]) => String(e[k] ?? '') === v) &&
         (!q || tableColumns.some(([k]) =>
@@ -463,6 +552,7 @@ function renderEmployees() {
         tableFootElement.textContent =
             `Showing ${rows.length} of ${allEmployees.length} employee records` +
             `${activeKpi ? ` · KPI: ${activeKpi.replaceAll('_', ' ')}` : ''}` +
+            `${activeSkill ? ` · Skill: ${activeSkill}` : ''}` +
             `${selectedClient ? ` · Client: ${selectedClient}` : ''}` +
             ` · Filter source columns · Missing values shown as Not provided`;
     }
@@ -605,30 +695,8 @@ async function refresh() {
                 : '<span>Certification status not provided in source</span>';
         }
 
-        // BILLABILITY CHART
-        const bill = data.by_billability.filter(
-            x => x.label !== 'Not provided'
-        );
-
-        drawChart(
-            'billChart',
-            'doughnut',
-            bill.map(x => x.label),
-            bill.map(x => x.count)
-        );
-
-        const billLegend = $('bill-legend');
-
-        if (billLegend) {
-            billLegend.innerHTML = bill.length
-                ? bill.slice(0, 4).map((x, i) => `
-                    <span>
-                        <i class="legend-dot" style="background:${palette[i]}"></i>
-                        ${esc(x.label)} (${x.count})
-                    </span>
-                `).join('')
-                : '<span>Billability not provided in source</span>';
-        }
+        // TECHNICAL SKILLS CHART
+        renderTechnicalSkills();
 
         // CLIENT DISTRIBUTION
         window.lastClientDistribution = data.by_client;
@@ -699,6 +767,7 @@ if (clearFiltersButton) {
 
         selectedClient = '';
         activeKpi = null;
+        activeSkill = '';
 
         document.querySelectorAll('.column-filter').forEach(x => {
             x.value = '';
@@ -712,6 +781,7 @@ if (clearFiltersButton) {
             window.lastClientDistribution || []
         );
 
+        renderTechnicalSkills();
         renderEmployees();
     });
 }

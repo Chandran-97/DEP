@@ -440,6 +440,22 @@ body {
     margin-right: 5px;
 }
 
+.skill-legend-button {
+    border: 0;
+    border-radius: 5px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    padding: 3px 5px;
+    cursor: pointer;
+}
+
+.skill-legend-button:hover,
+.skill-legend-button.selected {
+    background: #f0efff;
+    color: #5e51c3;
+}
+
 /* LOWER PANELS */
 
 .lower-grid {

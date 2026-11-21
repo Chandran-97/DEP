@@ -126,7 +126,7 @@ Sign in with the email and password created in step 5. Use **Sign out** to end t
 
 Edit `Employee_data.xlsx` at the path read by the running server and save the workbook. Dashboard pages check for saved changes every 10 seconds and automatically refresh after save. **Refresh data** is also available for immediate manual refresh. Do not edit the workbook while Excel prevents other programs from reading the saved file.
 
-By default, the server reads `Employee_data.xlsx` in the project folder. To watch a workbook in another location, configure `EXCEL_PATH` in the local `.env` to its absolute path (for example, a synced folder path). The server computer must be able to access and read that path; a workbook on a manager's separate, unsynced computer will not update this dashboard.
+By default, the server reads `data/employees.xlsx` in the project folder. To watch a workbook in another location, configure `EXCEL_PATH` in the local `.env` to its absolute path (for example, a synced folder path). The server computer must be able to access and read that path; a workbook on a manager's separate, unsynced computer will not update this dashboard.
 
 The workbook must have these exact headers in the first row:
 
