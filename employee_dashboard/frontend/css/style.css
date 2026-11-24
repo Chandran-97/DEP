@@ -1176,3 +1176,56 @@ footer {
         flex: 1;
     }
 }
+
+/* =========================================================
+   TECHNICAL SKILLS COLUMN FIX
+   Prevent skills from overflowing into adjacent columns
+   ========================================================= */
+ 
+/* Keep the table columns consistent and readable */
+.employee-table {
+    table-layout: auto;
+}
+ 
+/* Technical Skills - column 4 */
+.employee-table th:nth-child(4),
+.employee-table td:nth-child(4) {
+    width: 400px;
+    min-width: 350px;
+    max-width: 400px;
+}
+ 
+/* Wrap skills text within its own cell */
+.employee-table tbody td:nth-child(4) {
+    white-space: normal !important;
+    overflow-wrap: break-word;
+    word-break: normal;
+    line-height: 1.6;
+    vertical-align: top;
+}
+ 
+/* Ensure other cells do not inherit the skills wrapping behavior */
+.employee-table tbody td:not(:nth-child(4)) {
+    white-space: nowrap;
+}
+ 
+/* Improve row alignment when skills wrap to multiple lines */
+.employee-table tbody tr {
+    height: auto;
+}
+ 
+.employee-table tbody td:nth-child(4) {
+    height: auto;
+}
+ 
+   /* YOE CHART */
+ 
+ 
+#yoeChart {
+    width: 100% !important;
+}
+ 
+#yoeChart {
+    max-width: 100%;
+}
+ 
