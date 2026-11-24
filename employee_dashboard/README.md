@@ -792,3 +792,4 @@ The application should be validated against the organization's business requirem
 **Data Source:** Excel  
 **Platform:** Windows-based local application
 
+python -m uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
