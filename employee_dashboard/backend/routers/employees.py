@@ -33,4 +33,4 @@ def export_employees(payload: ExportRequest):
             max_len = max((len(str(cell.value or "")) for cell in column[:200]), default=12)
             ws.column_dimensions[letter].width = min(max(max_len + 2, 12), 36)
     output.seek(0)
-    return StreamingResponse(output, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", headers={"Content-Disposition": "attachment; filename=DEP_filtered_employees.xlsx"})
+    return StreamingResponse(output, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", headers={"Content-Disposition": "attachment; filename=Data Practice Resources.xlsx"})

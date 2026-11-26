@@ -311,7 +311,7 @@ The project structure may look similar to the following:
     ├── setup_login.py
     ├── start_dashboard.bat
     ├── .env
-    ├── DEP_filtered_employees.xlsx
+    ├── Data Practice Resources.xlsx
     └── README.md
 
 ### Folder and File Description
@@ -325,7 +325,7 @@ The project structure may look similar to the following:
 | setup_login.py | Initial dashboard login setup |
 | start_dashboard.bat | Windows startup script |
 | .env | Local application configuration and credentials |
-| DEP_filtered_employees.xlsx | Employee data source |
+| Data Practice Resources.xlsx | Employee data source |
 | README.md | Project documentation |
 
 > The exact project structure may vary based on the current implementation.
